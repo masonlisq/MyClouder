@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="kfm-clouder-web:war2">
+    <output-path>$PROJECT_DIR$/out/artifacts/kfm_clouder_web_war2</output-path>
+    <root id="archive" name="kfm-clouder-web_war.war">
+      <element id="artifact" artifact-name="kfm-clouder-web:war exploded" />
+    </root>
+  </artifact>
+</component>

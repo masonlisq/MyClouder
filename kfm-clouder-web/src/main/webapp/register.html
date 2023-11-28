@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>开发喵云盘</title>
+    <link rel="shortcut icon" href="//sce9a0b7c7d81f-sb-qn.qiqiuyun.net/files/system/2021/02-26/162223fed40c331647.jpg?version=22.3.3">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f2f2f2;
+        }
+
+        .container {
+            width: 300px;
+            margin: 0 auto;
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 20px;
+            margin-top: 50px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 10px;
+        }
+
+        input[type="text"],
+        input[type="password"],
+        input[type="email"],
+        input[type="tel"] {
+            width: 90%;
+            padding: 5%;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus,
+        input[type="password"]:focus,
+        input[type="email"]:focus,
+        input[type="tel"]:focus {
+            border-color: #007BFF;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+
+        a {
+            text-decoration: none;
+            float: right;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div style="text-align: center;margin-bottom: 10px">
+        <div><img src="https://sce9a0b7c7d81f-sb-qn.qiqiuyun.net/files/system/2022/10-17/1601117d2e5b797001.jpg?version=22.3.3" style="width: 220px;height: 50px;margin-top: 10px" alt=""> </div>
+    </div>
+    <form action="/register" method="post">
+        <label for="username">用户名</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="nickName">昵称</label>
+        <input type="text" id="nickName" name="nickName" required>
+
+        <label for="password">密码</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="sex">性别</label>
+        <input type="text" id="sex" name="sex" required>
+
+        <label for="avatar">头像</label>
+        <input type="text" id="avatar" name="avatar" required>
+
+        <label for="email">邮箱</label>
+        <input type="email" id="email" name="email" required>
+
+        <label for="phone">电话</label>
+        <input type="text" id="phone" name="phone" required>
+
+        <button type="submit">提交</button>
+    </form>
+</div>
+</body>
+</html>

@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>开发喵云盘</title>
+    <link rel="shortcut icon"
+          href="//sce9a0b7c7d81f-sb-qn.qiqiuyun.net/files/system/2021/02-26/162223fed40c331647.jpg?version=22.3.3">
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="../css/index.css">
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.1/lib/theme-chalk/index.css">
+    <style>
+        .el-dropdown-link {
+            cursor: pointer;
+            color: #409EFF;
+        }
+
+        .el-icon-arrow-down {
+            font-size: 12px;
+        }
+
+        .avatar-uploader .el-upload {
+            border: 1px dashed #d9d9d9;
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .avatar-uploader .el-upload:hover {
+            border-color: #409EFF;
+        }
+
+        .avatar-uploader-icon {
+            font-size: 28px;
+            color: #8c939d;
+            width: 178px;
+            height: 178px;
+            line-height: 178px;
+            text-align: center;
+        }
+
+        .avatar {
+            width: 178px;
+            height: 178px;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+    <div style="height: 50px">
+        <div style="float: left"><img
+                src="https://sce9a0b7c7d81f-sb-qn.qiqiuyun.net/files/system/2022/10-17/1601117d2e5b797001.jpg?version=22.3.3"
+                style="width: 220px;height: 50px;margin-top: 10px" alt=""></div>
+        <!--        <div style="float: right; margin-top: 10px">-->
+        <!--            <el-button round @click="open">退出登录</el-button>-->
+        <!--        </div>-->
+        <div style="float: right; margin-top: 15px;margin-right: 30px">
+            <el-dropdown @command="handleCommand">
+                <el-link :underline="false">
+                 <span class="el-dropdown-link">
+                 {{ username }}<i class="el-icon-arrow-down el-icon--right"></i>
+                </span>
+                </el-link>
+
+
+                <el-dropdown-menu slot="dropdown">
+                    <el-dropdown-item command="myMessage">我的信息</el-dropdown-item>
+                    <el-dropdown-item command="modifyMessage">修改信息</el-dropdown-item>
+                    <el-dropdown-item command="modifyAvatar">修改头像</el-dropdown-item>
+                    <el-dropdown-item command="modifyPassword">修改密码</el-dropdown-item>
+                    <el-dropdown-item command="logout">退出登录</el-dropdown-item>
+                </el-dropdown-menu>
+            </el-dropdown>
+            <!--            我的信息-->
+            <el-drawer
+                    title="我的信息"
+                    :visible.sync="drawerMyMessage"
+                    :direction="direction">
+                <el-descriptions title="" direction="vertical" :column="4" border>
+                    <el-descriptions-item label="账户名">{{ form.usernameMsg }}</el-descriptions-item>
+                    <el-descriptions-item label="昵称">{{ form.nickNameMsg }}</el-descriptions-item>
+                    <el-descriptions-item label="性别">{{ form.sexMsg}}</el-descriptions-item>
+                    <el-descriptions-item label="邮箱">{{ form.emailMsg }}</el-descriptions-item>
+                    <el-descriptions-item label="手机">{{ form.phoneNumberMsg }}</el-descriptions-item>
+                </el-descriptions>
+            </el-drawer>
+            <el-drawer
+                    title="修改信息"
+                    :visible.sync="drawerMessage"
+                    :direction="direction">
+                <div class="demo-drawer__content">
+                    <el-form :model="form">
+                        <el-form-item label="用户名" :label-width="formLabelWidth">
+                            {{ form.usernameMsg }}
+                        </el-form-item>
+                        <el-form-item label="昵称" :label-width="formLabelWidth">
+                            <el-input v-model="form.nickNameMsg" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="性别" :label-width="formLabelWidth">
+                            <el-input v-model="form.sexMsg" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="邮箱" :label-width="formLabelWidth">
+                            <el-input v-model="form.emailMsg" autocomplete="off"></el-input>
+                        </el-form-item>
+                        <el-form-item label="手机" :label-width="formLabelWidth">
+                            <el-input v-model="form.phoneNumberMsg" autocomplete="off"></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <div class="demo-drawer__footer">
+                        <el-button @click="cancelForm">取 消</el-button>
+                        <el-button type="primary" @click="handleClose" :loading="loading">
+                            {{ loading ? '提交中 ...' : '确 定' }}
+                        </el-button>
+                    </div>
+                </div>
+            </el-drawer>
+            <el-drawer
+                    title="修改头像"
+                    :visible.sync="drawerAvatar"
+                    :direction="direction">
+                <el-upload
+                        class="avatar-uploader"
+                        action="http://localhost:8080/updateAvatar"
+                        :show-file-list="false"
+                        :on-success="handleAvatarSuccess"
+                        :before-upload="beforeAvatarUpload">
+                    <img v-if="imageUrl" :src="imageUrl" class="avatar">
+                    <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
+            </el-drawer>
+            <el-drawer
+                    title="修改密码"
+                    :visible.sync="drawerPassword"
+                    :direction="direction">
+                <el-form>
+                    <el-form-item label="密码" :label-width="formLabelWidth">
+                        <el-input v-model="formPwd.password" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item label="再次输入密码" :label-width="formLabelWidth">
+                        <el-input v-model="formPwd.rePassword" autocomplete="off"></el-input>
+                    </el-form-item>
+                </el-form>
+                <div class="demo-drawer__footer">
+                    <el-button @click="cancelForm">取 消</el-button>
+                    <el-button type="primary" @click="handleClosePwd" :loading="loading">
+                        {{ loading ? '提交中 ...' : '确 定' }}
+                    </el-button>
+                </div>
+            </el-drawer>
+        </div>
+
+        <div class="block" style="float: right; margin-right: 10px">
+            <el-avatar :size="50" :src="circleUrl"></el-avatar>
+        </div>
+
+    </div>
+    <el-divider></el-divider>
+    <el-upload
+            class="upload-demo"
+            action="http://localhost:8080/addFiles"
+            :on-preview="handlePreview"
+            multiple
+            :limit="3"
+            :on-exceed="handleExceed"
+            :file-list="fileList">
+        <el-button size="small" type="primary">上传文件</el-button>
+    </el-upload>
+    <template>
+        <el-table
+                :data="tableData"
+                style="width: 100%">
+
+            <el-table-column
+                    prop=""
+                    label=""
+                    width=240">
+            </el-table-column>
+            <el-table-column
+                    prop="fileName"
+                    label="文件名"
+                    width=300">
+            </el-table-column>
+            <el-table-column
+                    prop="fileSize"
+                    label="大小"
+                    width="180">
+            </el-table-column>
+            <el-table-column
+                    prop="createTime"
+                    label="创建时间"
+                    width="180">
+            </el-table-column>
+            <el-table-column label="操作">
+                <template slot-scope="scope">
+<!--                    <el-button-->
+<!--                            size="mini"-->
+<!--                            @click="handleDownload(scope.$index, scope.row)">下载</el-button>-->
+                    <el-link type="primary"
+                             :underline="false"
+                             icon="el-icon-download"
+                             :href="'http://localhost:8080/download?fileName='+scope.row.fileName">下载</el-link>
+
+                </template>
+            </el-table-column>
+        </el-table>
+    </template>
+</div>
+</body>
+</html>
+<!-- import Vue before Element -->
+<script src="../js/vue.js"></script>
+<!-- import JavaScript -->
+<script src="../js/index.js"></script>
+<script src="../js/axios.min.js"></script>
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                username: "",
+                circleUrl: "",
+                tableData: [],
+                countTimeSign: undefined,
+                fileList: [],
+                drawerMyMessage: false,
+
+                drawerAvatar: false,
+                imageUrl: '',
+                drawerMessage: false,
+                drawerPassword: false,
+                direction: 'rtl',
+                form: {
+                    usernameMsg: '',
+                    nickNameMsg: '',
+                    sexMsg: '',
+                    emailMsg: '',
+                    phoneNumberMsg: '',
+                },
+                formLabelWidth: '80px',
+                timer: null,
+                formPwd: {
+                    password: '',
+                    rePassword: ''
+                }
+            };
+        },
+        methods: {
+            fetchFileData() {
+                axios.post('http://localhost:8080/selectAllFiles')
+                    .then(response => {
+                        // 假设API返回文件对象的数组
+                        this.tableData = response.data;
+                        console.log(this.tableData);
+                    })
+                    .catch(error => {
+                        console.error('获取文件数据时出错：', error);
+                    });
+            },
+            fetchNickNameAvatarUrl() {
+                axios.post('http://localhost:8080/selectElement')
+                    .then(response => {
+                        this.username = response.data.nickName;
+                        this.circleUrl = response.data.avatarUrl;
+
+                    })
+                    .catch(error => {
+                        console.error('获取昵称和头像时出错：', error);
+                    });
+            },
+            logout() {
+                location.href="http://localhost:8080/logout"
+            },
+            handleCommand(command) {
+                // this.drawerMyMessage = true;
+                switch (command) {
+                    case "myMessage" : {
+                        this.selectMyMessage();
+                        break;
+                    }
+                    case "modifyMessage" : {
+                        this.modifyMessage();
+                        break;
+                    }
+                    case "modifyAvatar" : {
+                        this.modifyAvatar();
+                        break
+                    }
+                    case "modifyPassword" : {
+                        this.modifyPassword();
+                        break;
+                    }
+                    case "logout" : {
+                        this.logout();
+                        break;
+                    }
+                    default: {
+                        break;
+                    }
+                }
+            },
+            selectMyMessage() {
+                this.queryMyMessage();
+                this.drawerMyMessage = true;
+            },
+            queryMyMessage() {
+                axios.get('http://localhost:8080/user?type=query')
+                    .then(response => {
+                        // 将响应数据保存到组件的数据属性中
+                        this.form.usernameMsg = response.data.username;
+                        this.form.nickNameMsg = response.data.nickName;
+                        this.form.sexMsg = response.data.sex;
+                        this.form.emailMsg = response.data.email;
+                        this.form.phoneNumberMsg = response.data.phoneNumber;
+                        console.log(response.data())
+                    })
+                    .catch(error => {
+                        console.error('获取我的信息时出错：', error);
+                    });
+            },
+            modifyAvatar() {
+                this.drawerAvatar = true;
+            },
+            handleAvatarSuccess(res, file) {
+                this.imageUrl = URL.createObjectURL(file.raw);
+                this.fetchNickNameAvatarUrl();
+                location.reload();
+            },
+            beforeAvatarUpload(file) {
+                const isJPG = file.type === 'image/jpeg';
+                const isLt2M = file.size / 1024 / 1024 < 2;
+
+                if (!isJPG) {
+                    this.$message.error('上传头像图片只能是 JPG 格式!');
+                }
+                if (!isLt2M) {
+                    this.$message.error('上传头像图片大小不能超过 2MB!');
+                }
+                return isJPG && isLt2M;
+            },
+            modifyMessage() {
+                this.queryMyMessage();
+                this.drawerMessage = true;
+            },
+            updateMyMessage() {
+                axios.post('http://localhost:8080/user?type=edit' + "&nickName=" + this.form.nickNameMsg
+                    + "&sex="+this.form.sexMsg+"&email=" + this.form.emailMsg + "&phoneNumber=" + this.form.phoneNumberMsg)
+                    .then(response => {
+                        // 将响应数据保存到组件的数据属性中
+                        var messageTip = response.data.message;
+                        if (messageTip == "success") {
+                            this.$message({
+                                message: '修改信息成功！',
+                                type: 'success'
+                            });
+                        } else {
+                            this.$message({
+                                message: messageTip,
+                                type: 'error'
+                            });
+                        }
+                        this.fetchNickNameAvatarUrl();
+
+                    })
+                    .catch(error => {
+                        console.error('获取我的信息时出错：', error);
+                    });
+            },
+            handleClose() {
+                if (this.loading) {
+                    return;
+                }
+                this.$confirm('确定要提交修改吗？')
+                    .then(_ => {
+                        this.loading = true;
+                        this.timer = setTimeout(() => {
+                            // 动画关闭需要一定的时间
+                            setTimeout(() => {
+                                this.loading = false;
+                            }, 400);
+                        }, 2000);
+                        this.updateMyMessage();
+                    })
+                    .catch(_ => {
+                    });
+            },
+            cancelForm() {
+                this.loading = false;
+                clearTimeout(this.timer);
+            },
+            // 修改密码
+            modifyPassword() {
+                this.drawerPassword = true;
+            },
+            handleClosePwd() {
+                if (this.loading) {
+                    return;
+                }
+                this.$confirm('确定要修改密码吗？')
+                    .then(_ => {
+                        this.loading = true;
+                        this.timer = setTimeout(() => {
+                            // 动画关闭需要一定的时间
+                            setTimeout(() => {
+                                this.loading = false;
+                            }, 400);
+                        }, 2000);
+                        this.updatePassword();
+                    })
+                    .catch(_ => {
+                    });
+            },
+            updatePassword() {
+                axios.post('http://localhost:8080/user?type=editPassword' + "&password=" + this.formPwd.password
+                    + "&rePassword=" + this.formPwd.rePassword)
+                    .then(response => {
+                        // 将响应数据保存到组件的数据属性中
+                        var messageTip = response.data.message;
+                        if (messageTip == "success") {
+                            this.$message({
+                                message: '修改密码成功！',
+                                type: 'success'
+                            });
+                        } else {
+                            this.$message({
+                                message: response.data.message,
+                                type: 'error'
+                            });
+                        }
+                        console.log(response.data())
+                    })
+                    .catch(error => {
+                        console.error('获取我的信息时出错：', error);
+                    });
+            },
+            handlePreview(file) {
+                console.log(file);
+            },
+            handleExceed(files, fileList) {
+                this.$message.warning(`当前限制选择 3 个文件，本次选择了 ${files.length} 个文件，共选择了 ${files.length + fileList.length} 个文件`);
+            },
+        },
+        mounted() {
+            // 当组件创建时获取服务器数据
+            this.fetchFileData();
+            // 每隔一段时间轮询数据，检查表中是否有修改
+            this.countTimeSign = setInterval(() => {
+                this.fetchFileData();
+            }, 2000); // 每1秒轮询一次
+            this.fetchNickNameAvatarUrl();
+        },
+        beforeDestroy() {
+            // 在页面卸载时清除 setInterval
+            clearInterval(this.countTimeSign);
+        },
+
+    })
+</script>
